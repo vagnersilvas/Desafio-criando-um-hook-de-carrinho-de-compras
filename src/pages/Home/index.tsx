@@ -31,6 +31,8 @@ const Home = (): JSX.Element => {
 
   useEffect(() => {
     async function loadProducts() {
+      const datasets= await api.get('products').then(product => product.data)
+      console.log(datasets)
       // TODO
     }
 
