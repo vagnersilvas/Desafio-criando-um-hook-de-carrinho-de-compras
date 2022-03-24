@@ -31,24 +31,29 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
     return [];
   });
-  
+
+  function compare(product1: Product, product2: Product) {
+    return JSON.stringify(product1) === JSON.stringify(product2)
+  }
+
   const addProduct = async (productId: number) => {
     try {
       const response = await api.get(`products/${productId}`)
-
 
       const product = {
         ...response.data,
         amount: 1
       }
+
       setCart(cart => {
-        const newProduct = [
+        const newCart = [
           ...cart,
           product
         ]
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(newProduct))
 
-        return newProduct
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart))
+
+        return newCart
       })
 
       // TODO
@@ -60,9 +65,13 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
+      const productDeleted = cart.filter(product => (product.id !== productId))
+
+      setCart([...productDeleted]);
+
     } catch {
-      // TODO
+    toast.error('erro')
+
     }
   };
 
@@ -71,9 +80,29 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      // TODO
+      
+      setCart(cart => {
+
+        const productStoraged = cart.map(item => {
+          if (item.id === productId) {
+            return item = {
+              id: item.id,
+              title: item.title,
+              price: item.price,
+              image: item.image,
+              amount: amount
+            }
+          }
+          return item
+        })
+        
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(productStoraged))
+
+        return productStoraged
+      })
+
     } catch {
-      // TODO
+      toast.error('erro')
     }
   };
 

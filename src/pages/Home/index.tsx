@@ -39,6 +39,11 @@ const Home = (): JSX.Element => {
   }, []);
 
   function handleAddProduct(id: number) {
+    cart.map(product => {
+      if(product.id === id) {
+        
+      }
+    })
     addProduct(id)
     // TODO
   }
