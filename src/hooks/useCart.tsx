@@ -32,33 +32,39 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     return [];
   });
 
-  function compare(product1: Product, product2: Product) {
-    return JSON.stringify(product1) === JSON.stringify(product2)
-  }
-
   const addProduct = async (productId: number) => {
     try {
-      const response = await api.get(`products/${productId}`)
+      const responseProducts = await api.get(`products/${productId}`)
 
-      const product = {
-        ...response.data,
-        amount: 1
+      const responseStocks = await api.get(`stock/${productId}`)
+
+      if (responseStocks.data?.amount > 0) {
+
+        const product = {
+          ...responseProducts.data,
+          amount: 1
+        }
+        const obj = {
+          productId: productId,
+          amount: responseStocks.data?.amount - product.amount
+        }
+        setCart(cart => {
+          const newProduct = [
+            ...cart,
+            product
+          ]
+          localStorage.setItem('@RocketShoes:cart', JSON.stringify(newProduct))
+
+          return newProduct
+        })
+        // updateProductAmount(obj)
+        return
       }
 
-      setCart(cart => {
-        const newCart = [
-          ...cart,
-          product
-        ]
+      // toast.error('Estoque indisponível')
 
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart))
-
-        return newCart
-      })
-
-      // TODO
     } catch {
-      console.log(toast.error('erro'))
+      toast.error('erro')
       // TODO
     }
   };
@@ -70,7 +76,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       setCart([...productDeleted]);
 
     } catch {
-    toast.error('erro')
+      toast.error('erro')
 
     }
   };
@@ -80,31 +86,17 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      
-      setCart(cart => {
-
-        const productStoraged = cart.map(item => {
-          if (item.id === productId) {
-            return item = {
-              id: item.id,
-              title: item.title,
-              price: item.price,
-              image: item.image,
-              amount: amount
-            }
-          }
-          return item
-        })
-        
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(productStoraged))
-
-        return productStoraged
-      })
+      const stock = {
+        id: productId,
+        amount: amount
+      }
+      await api.put(`stock/${productId}`, stock).then(console.log)
 
     } catch {
       toast.error('erro')
     }
-  };
+
+  }
 
   return (
     <CartContext.Provider
